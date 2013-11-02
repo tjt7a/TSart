@@ -12,8 +12,12 @@ out_array = numpy.zeros(array.size).reshape((len(array), len(array[0])))
 # Iterate through 2d array and invert values
 for i in range(len(array)):
 	for j in range(len(array[0])):
-		if(((j > len(array[0])/2) and (i < len(array)/2)) or ((j < len(array[0])/2) and (i > len(array)/2))):		
-			out_array[i][j] = 1 - array[i][j]
+#		if(((j > len(array[0])/2) and (i < len(array)/2)) or ((j < len(array[0])/2) and (i > len(array)/2))):		
+#			out_array[i][j] = 1 - array[i][j]
+#		else:
+#			out_array[i][j] = array[i][j]
+		if((i%(len(array)/100)==0) or (j%(len(array[0])/100)==0)):
+			out_array[i][j] = 1
 		else:
 			out_array[i][j] = array[i][j]
 
