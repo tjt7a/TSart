@@ -1,9 +1,33 @@
+#!/usr/bin/python
+
+# import_image.py - Image importer 
+#
+# Author: Tommy Tracy II 
+# Created: 11/2/2013
+#
 import Image
 import numpy
+import sys
 
-# Read in image and convert to grayscale
-img = Image.open('rotunda.jpeg')
-img_2 = img.convert('L')    #convert to grayscale
+#Syntax:
+#./import_image.py <inputfile> <outputfile>
+if(len(sys.argv) != 3):
+	print "ERROR: provide input and output file names"
+	exit()
+
+# Set input and output file names
+in_filename = sys.argv[1] 
+out_filename = sys.argv[2]
+
+# Catch incorrect input filename
+try:
+	img = Image.open(in_filename)
+except IOError:
+	print "File:\'", in_filename, "\' doesn't exist"
+	exit()
+
+# Convert to grayscale and then to array
+img_2 = img.convert('L') 
 array = numpy.asarray(img_2)
 
 # Give output array dimmensions
@@ -21,6 +45,7 @@ for i in range(len(array)):
 		else:
 			out_array[i][j] = array[i][j]
 
-# Convert array to image
+# Convert array to image and write to output file
 out_img = Image.fromarray(out_array.astype(numpy.uint8))
-out_img.save('img2.png')
+out_img.save(out_filename)
+
