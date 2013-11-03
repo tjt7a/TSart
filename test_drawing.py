@@ -11,6 +11,7 @@ import Image
 import numpy
 import sys
 import drawing
+import graph
 import math
 
 #Syntax:
@@ -41,16 +42,11 @@ for i in range(0, len(array), int(interval)):
 	for j in range(0, len(array[0]), int(interval)):
 		nodes.append((i, j))		
 
-#out_img = drawing.draw_stipples(img_2, nodes, 10)
-
+out_img = drawing.draw_stipples(img_2, nodes, 10)
 
 # Fully connect all nodes
 edges = [] #((y1, x1), (y2, x2), distance)
-while(len(nodes) != 0):
-	temp = nodes.pop(0)
-	for i in range(len(nodes)):
-		edges.append((temp, nodes[i], math.hypot(temp[1]-nodes[i][1], temp[0]- nodes[i][0])))	
-	
+edges = graph.full_graph(nodes)	
 out_img = drawing.draw_edges(img_2, edges)
 
 # Give output array dimmensions
