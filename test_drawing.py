@@ -11,17 +11,18 @@ import Image
 import numpy
 import sys
 import drawing
+import math
 
 #Syntax:
 #./import_image.py <inputfile> <outputfile>
-if(len(sys.argv) != 3):
+if(len(sys.argv) != 4):
         print "ERROR: provide input and output file names"
         exit()
 
 # Set input and output file names
 in_filename = sys.argv[1]
 out_filename = sys.argv[2]
-
+interval = sys.argv[3]
 # Catch incorrect input filename
 try:
         img = Image.open(in_filename)
@@ -34,13 +35,23 @@ except IOError:
 img_2 = img.convert('L')
 array = numpy.asarray(img_2)
 
-a = []
+nodes = []
 # Make some example stipples
-for i in range(2, len(array)-2, 10):
-	for j in range(2, len(array[0])-2, 10):
-		a.append((i, j))		
+for i in range(0, len(array), int(interval)):
+	for j in range(0, len(array[0]), int(interval)):
+		nodes.append((i, j))		
 
-out_img = drawing.draw_stipples(img_2, a, 2)
+#out_img = drawing.draw_stipples(img_2, nodes, 10)
+
+
+# Fully connect all nodes
+edges = [] #((y1, x1), (y2, x2), distance)
+while(len(nodes) != 0):
+	temp = nodes.pop(0)
+	for i in range(len(nodes)):
+		edges.append((temp, nodes[i], math.hypot(temp[1]-nodes[i][1], temp[0]- nodes[i][0])))	
+	
+out_img = drawing.draw_edges(img_2, edges)
 
 # Give output array dimmensions
 #out_array = numpy.zeros(array.size).reshape((len(array), len(array[0])))
@@ -48,4 +59,3 @@ out_img = drawing.draw_stipples(img_2, a, 2)
 # Convert array to image and write to output file
 #out_img = Image.fromarray(out_array.astype(numpy.uint8))
 out_img.save(out_filename)
-	
