@@ -5,6 +5,7 @@
 # Author: Tommy Tracy II 
 # Created: 11/2/2013
 #
+
 import Image
 import numpy
 import sys
@@ -48,4 +49,3 @@ for i in range(len(array)):
 # Convert array to image and write to output file
 out_img = Image.fromarray(out_array.astype(numpy.uint8))
 out_img.save(out_filename)
-
