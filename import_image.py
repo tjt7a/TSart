@@ -9,6 +9,8 @@
 import Image
 import numpy
 import sys
+import stipple
+import drawing
 
 #Syntax:
 #./import_image.py <inputfile> <outputfile>
@@ -34,18 +36,9 @@ array = numpy.asarray(img_2)
 # Give output array dimmensions
 out_array = numpy.zeros(array.size).reshape((len(array), len(array[0])))
 
-# Iterate through 2d array and invert values
-for i in range(len(array)):
-	for j in range(len(array[0])):
-#		if(((j > len(array[0])/2) and (i < len(array)/2)) or ((j < len(array[0])/2) and (i > len(array)/2))):		
-#			out_array[i][j] = 1 - array[i][j]
-#		else:
-#			out_array[i][j] = array[i][j]
-		if((i%(len(array)/100)==0) or (j%(len(array[0])/100)==0)):
-			out_array[i][j] = 1
-		else:
-			out_array[i][j] = array[i][j]
+# Call stipple.py
 
-# Convert array to image and write to output file
-out_img = Image.fromarray(out_array.astype(numpy.uint8))
+stipples = stipple.stipple(array, 1, 0, 9)
+img_3 = Image.new('L', (len(array[0]), len(array)), "white")
+out_img = drawing.draw_stipples(img_3, stipples, 0)
 out_img.save(out_filename)

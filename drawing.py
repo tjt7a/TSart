@@ -18,7 +18,10 @@ def draw_stipples(img, stipples, radius):
 	for i in stipples:
 		y = i[0]
 		x = i[1]
-		draw.ellipse((x-r, y-r, x+r, y+r), fill=0)
+		if(r == 0):
+			draw.point((x, y), fill=0)
+		else:
+			draw.ellipse((x-r, y-r, x+r, y+r), fill=0)
 	return img 
 
 def draw_edges(img, edges):
