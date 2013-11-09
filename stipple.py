@@ -54,18 +54,22 @@ def calc_vectors(image, density):
 
 	# Get the expected pixel value from the image
 	shading = 255 - np.mean(image)
-	stip_ratio = (shading*density)/255.0
+	stip_prob = (shading*density)/255.0
 	#print "mean = ",np.mean(image)
 	#print "shading = ",shading/255.0
 	#print "density = ",density
 	#print "stip_ratio = ",stip_ratio
 
-	# Determine number of random stipples for image
-	area = len(image)*len(image[0])
-	num_stipples = int(round(area*stip_ratio))
-
 	# Create vectors and return
-	randx = np.random.randint(0, len(image[0]), num_stipples)
-	randy = np.random.randint(0, len(image), num_stipples)
-	output = zip(randy, randx)
+	output = []
+	num_stipples = 0
+	for x in range(len(image[0])):
+		for y in range(len(image)):
+			if(flip(stip_prob) == 1):
+				output.append((y, x))
+				num_stipples = num_stipples + 1
 	return (output, num_stipples)
+
+
+def flip(p):
+	return 1 if np.random.random() < p else 0
