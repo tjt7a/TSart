@@ -47,15 +47,15 @@ for i in range(len(array)):
 	for j in range(len(array[0])):
 		out_array[i][j] =  look_up_table[array[i][j]]
 
-out_img = Image.fromarray(out_array.astype(numpy.uint8))
-out_img.save(out_filename)
+#out_img = Image.fromarray(out_array.astype(numpy.uint8))
+#out_img.save(out_filename)
 
 # Call stipple.py
 
-#stipples = stipple.stipple(out_array, 0.05, 0, 25)
-#print "blocks = ",stipples[1]
-#print "recursions = ",stipples[2]
-#print "stipple number = ",stipples[3]
-#img_4 = Image.new('L', (len(array[0]), len(array)), "white")
-#out_img = drawing.draw_stipples(img_4, stipples[0], 2)
-#out_img.save(out_filename)
+stipples = stipple.stipple(out_array, 0.05, 0, 25)
+print "blocks = ",stipples[1]
+print "recursions = ",stipples[2]
+print "stipple number = ",stipples[3]
+img_4 = Image.new('L', (len(array[0]), len(array)), "white")
+out_img = drawing.draw_stipples(img_4, stipples[0], 2)
+out_img.save(out_filename)
