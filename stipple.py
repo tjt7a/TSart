@@ -7,10 +7,12 @@ def stipple(image, density, var, min_size):
 	# Check base cases
 	### If variation of image is below threshold
 	if(np.var(image) < var):
-		return calc_vectors(image, density)
+		output = calc_vectors(image, density)
+		return (output[0], 1, 1, output[1])
 	### If size of the sub-block is below minimum size
 	if(len(image)*len(image[0]) < min_size):
-		return calc_vectors(image, density)
+		output = calc_vectors(image, density)
+		return (output[0], 1, 1, output[1])
 
 	# Get image width and length, and vertical and horizontal splits
 	image_w = len(image[0])
@@ -30,13 +32,15 @@ def stipple(image, density, var, min_size):
 	se_vect = stipple(se_image, density, var, min_size)
 
 	# Convert sub-block vectors to super-block vectors
-	shift_vect(ne_vect, (horiz_split-1), 0)
-	shift_vect(sw_vect, 0, (vert_split-1))
-	shift_vect(se_vect, (horiz_split-1), (vert_split-1))
+	shift_vect(ne_vect[0], (horiz_split-1), 0)
+	shift_vect(sw_vect[0], 0, (vert_split-1))
+	shift_vect(se_vect[0], (horiz_split-1), (vert_split-1))
 
-	#print nw_vect
+	blocks = nw_vect[1] + ne_vect[1] + sw_vect[1] + se_vect[1]
+	recursions = nw_vect[2] + ne_vect[2] + sw_vect[2] + se_vect[2] + 1
+	num_stipples = nw_vect[3] + ne_vect[3] + sw_vect[3] + se_vect[3]
 	
-	return nw_vect + ne_vect + sw_vect + se_vect
+	return ((nw_vect[0] + ne_vect[0] + sw_vect[0] + se_vect[0]), blocks, recursions, num_stipples)
 
 
 def shift_vect(vect, x_offset, y_offset):
@@ -64,4 +68,4 @@ def calc_vectors(image, density):
 	randx = np.random.randint(0, len(image[0]), num_stipples)
 	randy = np.random.randint(0, len(image), num_stipples)
 	output = zip(randy, randx)
-	return output
+	return (output, num_stipples)

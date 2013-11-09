@@ -38,7 +38,10 @@ out_array = numpy.zeros(array.size).reshape((len(array), len(array[0])))
 
 # Call stipple.py
 
-stipples = stipple.stipple(array, 1, 0, 9)
+stipples = stipple.stipple(array, 0.005, 0, 256)
+print "blocks = ",stipples[1]
+print "recursions = ",stipples[2]
+print "stipple number = ",stipples[3]
 img_3 = Image.new('L', (len(array[0]), len(array)), "white")
-out_img = drawing.draw_stipples(img_3, stipples, 0)
+out_img = drawing.draw_stipples(img_3, stipples[0], 2)
 out_img.save(out_filename)
