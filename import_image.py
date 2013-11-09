@@ -56,11 +56,11 @@ for i in range(len(array)):
 		out_array[i][j] =  look_up_table[array[i][j]]
 
 out_img = Image.fromarray(out_array.astype(numpy.uint8))
-out_img.save("condom.jpeg")
+out_img.save("temp.jpeg")
 
 # Call stipple.py
 
-stipples = stipple.stipple(out_array, 0.02, 0, 100)
+stipples = stipple.stipple(out_array, 0.03, 0, 100)
 print "blocks = ",stipples[1]
 print "recursions = ",stipples[2]
 print "stipple number = ",stipples[3]
