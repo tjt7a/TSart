@@ -12,6 +12,7 @@ import numpy
 import sys
 import stipple
 import drawing
+import graph
 
 #Syntax:
 #./import_image.py <inputfile> <outputfile>
@@ -60,10 +61,18 @@ out_img.save("temp.jpeg")
 
 # Call stipple.py
 
-stipples = stipple.stipple(out_array, 0.03, 0, 100)
+stipples = stipple.stipple(out_array, 0.08, 0, 9)
+#print stipples[0]
+#print "-----"
 print "blocks = ",stipples[1]
 print "recursions = ",stipples[2]
 print "stipple number = ",stipples[3]
-img_4 = Image.new('L', (len(array[0]), len(array)), "white")
-out_img = drawing.draw_stipples(img_4, stipples[0], 2)
+out_img = Image.new('L', (len(array[0]), len(array)), "white")
+out_img = drawing.draw_stipples(out_img, stipples[0], 1)
+out_img.save("post_stipple.jpeg")
+print "Finished drawing stipples"
+edges = graph.min_span_tree(stipples[0])
+print "Got edges"
+out_img = drawing.draw_edges(out_img, edges)
+print "Drew edges"
 out_img.save(out_filename)
