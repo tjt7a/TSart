@@ -45,8 +45,10 @@ for i in range(0, len(array), int(interval)):
 out_img = drawing.draw_stipples(img_2, nodes, 10)
 
 # Fully connect all nodes
-edges = [] #((y1, x1), (y2, x2), distance)
-edges = graph.full_graph(nodes)	
+#edges = graph.full_graph(nodes)
+#print edges
+#print nodes
+edges = graph.min_span_tree(nodes)
 out_img = drawing.draw_edges(img_2, edges)
 
 # Give output array dimmensions
