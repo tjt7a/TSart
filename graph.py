@@ -41,7 +41,7 @@ def full_graph(nodes):
 			edges.append((current_node, temp_node, weight))
 	return edges # Return tuple of (node_1, node_2, distance)
 
-
+# Parallelize this to N threads
 def min_span_tree(nodes):
 
 	# Edges that make up the min spanning tree
@@ -58,6 +58,8 @@ def min_span_tree(nodes):
 	#edges = full_graph(nodes)
 	edges = delaunay_graph(nodes)
 	print "Got delaunay graph!"
+
+	# Sort edges by weight
 	sorted_edges = sorted(edges, key=lambda edge: edge[2]) 
 	
 	print "Sorted delaunay graph"
@@ -97,3 +99,43 @@ def min_span_tree(nodes):
 		# Else: They're already in the same tree; don't care
 
 	return span_tree
+
+#Make tree from edges, and then do a depth first search
+def depth_first_search(edges):
+
+	graph = dict()
+
+	#Go through all edges and construct graph in dictionary
+	for edge in edges:
+		node_a = edge[0]
+		node_b = edge[1]
+
+		if node_a in graph:
+			graph[node_a].append(node_b)
+		else:
+			graph[node_a] = [node_b]
+
+	#Pick arbitrary node and call it root
+	root_node = graph[graph.keys()[0]]
+
+	root_children = graph[root_node]
+
+	#Sort children by angle from 0 degrees (EAST) around counter-clockwise
+	sorted_children = sorted(root_children, key=lambda child: edge_angle((root_node, child))) 
+
+	
+
+
+# Find the angle of the edge
+def edge_angle(edge):
+	x1 = edge[0][0]
+	y1 = edge[0][1]
+
+	x2 = edge[1][0]
+	y2 = edge[1][1]
+
+	temp = atan2(y2 - y1, x2 - x1) * (180 / pi)
+
+	if temp < 0:
+		temp += 360
+	return temp
