@@ -11,7 +11,7 @@ from math import *
 from scipy.spatial import Delaunay
 import numpy as np
 
-VERBOSE = True
+VERBOSE = False
 
 
 # ---------- Generate Graph from Nodes ---------- #
@@ -142,7 +142,16 @@ def depth_first_traversal(edges):
 
 	# Iteratively traverse it
 	# Order children and traverse in a counter-clockwise order, printing out new verticies as we reach them
-	tsp_nodes = pre_order(root_node, graph)	
+	tsp_nodes = pre_order(root_node, graph)
+
+	print "DONE GETTING TSP NODES!"
+	print "LET US SEE IF WE HAVE DUPLICATES"
+
+	for i in range(0, len(tsp_nodes)-1):
+		for j in range(i+1, len(tsp_nodes)):
+			if tsp_nodes[i] == tsp_nodes[j]:
+				print "we're seeing the same node again!"
+				print tsp_nodes[i], tsp_nodes[j]
 
 	#Chain the nodes into a series of edges! They're ordered too.
 	tsp_edges = []
@@ -186,8 +195,13 @@ def pre_order(root_node, graph):
 
 		# If we're out of children, go up one!
 		if len(sorted_children) == 0:
+
 			parent = parent_stack.pop()
+
+			if(len(parent_stack) != 0):
+				old_parent = parent_stack[-1]
 			continue
+
 		else:
 			graph[parent].remove(sorted_children[0])
 			old_parent = parent
@@ -207,6 +221,8 @@ def pre_order(root_node, graph):
 # Return the set of edges without crossings
 def remove_crossings(edges):
 
+	done = False
+
 	if VERBOSE:
 		print "Running Uncrossing Algorithm"
 
@@ -215,66 +231,198 @@ def remove_crossings(edges):
 
 	# Make dictionary for graphs edges for easy traversal in either direction
 	# Node -> (Node before, Node after)
-	for i in range (len(edges)-1):
+	for i in range (0, len(edges)-1):
+
 		# traversal (node) -> (node before, node after)
-		traversal[edges[i][0]] = (edges[i-1][0], edges[i][1])
+		traversal[edges[i][1]] = (edges[i][0], edges[i+1][1])
 
-	traversal[edges[-1][0]] = (edges[-2][0], edges[-1][1])
+	traversal[edges[-1][1]] = (edges[-1][0], edges[0][1])
 
-	# Iterate through all pairs of edges, determine if there's a crossing, and remove it.
+	#print "keys and dictionary"
+	#print "keys: ", traversal.keys()
+	#print traversal
+
+	# Iterate through all pairs of edges, determine if there's a crossing, and we uncross the edges
+	# We do this until there are no more crossings
+
+	test_var = 0;
+
 	while True:
 
 		num_crossings = 0
-		fixed_crossing = False
 
-		for i in range(len(edges)-1):
-			for j in range(i+1, len(edges)):
-				if(detect_crossing(edges[i], edges[j])):
+		num_of_edges = len(traversal.keys()) # Because we're in a cycle, the number of edges = number of nodes
+
+		if test_var == 0:
+			test_var = num_of_edges
+		else:
+			if test_var != num_of_edges:
+				print "We lost ", test_var-num_of_edges, " edges!"
+				return
+
+
+		if VERBOSE:
+			print "Number of edges: ", num_of_edges
+			print "i goes from ", 0, " to ", num_of_edges-1
+			print "j goes from i+1 to ",num_of_edges 
+
+
+		# Iterate through all pairs of edges i:=[0,end-1], j:=[1,end]
+ 
+		for i in range(0, (num_of_edges-1)):
+
+			#if done:
+				#break
+
+			for j in range(i+1, num_of_edges):
+
+				#if done: 
+					#break
+
+				current_i_node = traversal.keys()[i]
+				current_j_node = traversal.keys()[j]
+
+				#print "Current nodes: ", current_i_node, current_j_node
+
+				edge_i = (current_i_node, traversal[current_i_node][1]) # edge_i = (node at index i, node after i)
+				edge_j = (current_j_node, traversal[current_j_node][1]) # edge_j = (node at index j, node after j)
+
+				if VERBOSE:
+					print "Current Edges: ", edge_i, edge_j
+
+				if(detect_crossing(edge_i, edge_j)):
+
+					#print traversal
 
 					num_crossings += 1
 
 					# Unravel the two segments that are crossing
-					# Instead of deleting the two crossing edges, let's replace them with two new valid edges
-					first_edge_node_0 = edges[i][0] # This node can either connect to second_edge_node_0 or second_edge_node_1
-					first_edge_node_1 = edges[i][1]
+					first_edge_node_0 = edge_i[0] # This node can either connect to second_edge_node_0 or second_edge_node_1
+					first_edge_node_1 = edge_i[1] 
 
-					second_edge_node_0 = edges[j][0]
-					second_edge_node_1 = edges[j][1]
+					if VERBOSE:
+						print "First edge: ", first_edge_node_0, first_edge_node_1
 
+					second_edge_node_0 = edge_j[0]
+					second_edge_node_1 = edge_j[1]
+
+					if VERBOSE:
+						print "Second edge: ", second_edge_node_0, second_edge_node_1
+
+
+					#print "The nodes that are crossing: ", first_edge_node_0, first_edge_node_1, second_edge_node_0, second_edge_node_1
 
 					# In order to determine which of the two points first_edge_node_0 will NOT be connected to,
 					# find the first node that is connected to this node via a path backwards
+					# In order to maintain a constant direction, flip the direction of all edges until we find the first second_edge node
 
 					if first_edge_node_0 not in traversal:
 						print "ISSUES!! Our node not in the dictionary!"
 
-					node_before = traversal[first_edge_node_0][0]
+					#node_before = traversal[first_edge_node_0][0] # Get the node before the current node (in the case of i being 0, this would be the last node in the traversal)
+
+					iterator_node = first_edge_node_0
+
+					#print "Iterator node: ", iterator_node
+
+					#Reverse this node
+					node_before = traversal[iterator_node][0]
+					#node_after = traversal[iterator_node][1]
+					node_after = None # The node after is not yet known
+					traversal[iterator_node] = (node_after, node_before) # Now we're pointing in the opposite direction!
+
+					#print "FIRST Rotating Result: ", node_after, node_before
+
+					index = 0
 
 					# Iterate backwards through the graph (from edge to edge) and check to see which of the 2 above nodes we hit first
 					while True:
 
-						# We've looped back to second_edge_node_0; do _not_ connect to it or we'll have two disjoint graphs
-						if node_before == second_edge_node_0:
-							edges[i] = (first_edge_node_0, second_edge_node_1, hypot(first_edge_node_0[1] - second_edge_node_1[1], first_edge_node_0[0] - second_edge_node_1[0]))
-							edges[j] = (first_edge_node_1, second_edge_node_0, hypot(first_edge_node_1[1] - second_edge_node_0[1], first_edge_node_1[0] - second_edge_node_0[0]))
+						iterator_node = traversal[iterator_node][1]
 
-							fixed_crossing = True
-							break
+						#print "New Iterator: ", iterator_node
+
+						#Reverse this node as well
+						node_before = traversal[iterator_node][0]
+						node_after = traversal[iterator_node][1]
+						traversal[iterator_node] = (node_after, node_before)
+
+						#print "Rotating Result: ", node_after, node_before
+
+						# We've looped back to second_edge_node_0; do _not_ connect to it or we'll have two disjoint graphs
+						if iterator_node == second_edge_node_0:
+							print "This is no good!"
+							return
 
 
 						# We've looped back to second_edge_node_1; do _not_connect to it or we'll have two disjoint graphs
-						if node_before == second_edge_node_1:
-							edges[i] = (first_edge_node_0, second_edge_node_0, hypot(first_edge_node_0[1] - second_edge_node_0[1], first_edge_node_0[0] - second_edge_node_0[0]))
-							edges[j] = (first_edge_node_1, second_edge_node_1, hypot(first_edge_node_1[1] - second_edge_node_1[1], first_edge_node_1[0] - second_edge_node_1[0]))
+						if iterator_node == second_edge_node_1:
+							#print "We're back at second_edge_node_1"
 
-							fixed_crossing = True
+							# Set correct direction for first_edge_node_0
+							node_before_fe_n0 = second_edge_node_0
+							node_after_fe_n0 = traversal[first_edge_node_0][1]
+
+							traversal[first_edge_node_0] = (node_before_fe_n0, node_after_fe_n0)
+							traversal[second_edge_node_0] = (traversal[second_edge_node_0][0], first_edge_node_0)
+
+							if VERBOSE:
+								print "first_edge_node_0: ", first_edge_node_0
+								print "first_edge_node_0 neighbors: ", traversal[first_edge_node_0]
+								print "second_edge_node_0: ", second_edge_node_0
+								print "second_edge_node_0 neighbors: ", traversal[second_edge_node_0]
+
+							# Set correct direction for first_edge_node_1
+							node_before_fe_n1 = second_edge_node_1 # We already reversed this node!
+							node_after_fe_n1 = traversal[first_edge_node_1][1]
+
+							traversal[first_edge_node_1] = (node_before_fe_n1, node_after_fe_n1)
+							traversal[second_edge_node_1] = (traversal[second_edge_node_1][0], first_edge_node_1)
+
+							if VERBOSE:
+								print "first_edge_node_1: ", first_edge_node_1
+								print "first_edge_node_1 neighbors: ", traversal[first_edge_node_1]
+								print "second_edge_node_1: ", second_edge_node_1
+								print "second_edge_node_1 neighbors: ", traversal[second_edge_node_1]
+
+								print traversal
+
 							break
 
-						node_before = traversal[node_before][0]
+						if iterator_node == first_edge_node_0:
+								print "We looped; we're done"
+								done = True;
+								break
 
-		if num_crossings == 0:
-			return edges
+						#node_before = traversal[node_before][1] # node_before is already reversed, so go 'forward'
+
+						#old_node_before = traversal[node_before][0]
+						#old_node_after = traversal[node_before][1]
+						#traversal[node_before] = (old_node_after, old_node_before)
+
+						#print node_before
+
+						index += 1
+
+				if done:
+					break
+
+			if done: 
+				break
+
+
+		if num_crossings == 0 or done:
+
+			final_list = []
+
+			#Convert dictionary back to list
+			for node in traversal.keys():
+				final_list.append((node, traversal[node][1]))
+
+			return final_list
+
 		else:
+			print "Number of crossings: ", num_crossings
 			continue
 
 
