@@ -26,11 +26,17 @@ def draw_stipples(img, stipples, radius):
 
 def draw_edges(img, edges):
 	draw = ImageDraw.Draw(img)
-	for edge in edges:
-		y1 = edge[0][1]
-		x1 = edge[0][0]
 
-		y2 = edge[1][1]
-		x2 = edge[1][0]
-		draw.line((y1, x1, y2, x2), fill = 0)
+	for edge in edges:
+
+		try:
+			y1 = edge[0][1]
+			x1 = edge[0][0]
+
+			y2 = edge[1][1]
+			x2 = edge[1][0]
+			draw.line((y1, x1, y2, x2), fill = 0)
+		except TypeError:
+			print "Got this: ", edge 
+
 	return img	
