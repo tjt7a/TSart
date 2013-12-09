@@ -128,30 +128,33 @@ def depth_first_traversal(edges):
 		node_b = edge[1]
 
 		if node_a in graph:
-			graph[node_a].append(node_b)
+			if node_b in graph[node_a]:
+				print "DUPLICATE CHILD A"
+			else:
+				graph[node_a].append(node_b)
 		else:
 			graph[node_a] = [node_b]
 
 		if node_b in graph:
-			graph[node_b].append(node_a)
+			if node_a in graph[node_b]:
+				print "DUPLICATE CHILD B"
+			else:
+				graph[node_b].append(node_a)
 		else:
 			graph[node_b] = [node_a]
 
-	# Pick arbitrary node and call it root
-	root_node = graph[graph.keys()[0]][0]
-
 	# Iteratively traverse it
 	# Order children and traverse in a counter-clockwise order, printing out new verticies as we reach them
-	tsp_nodes = pre_order(root_node, graph)
+	tsp_nodes = pre_order(graph)
 
-	print "DONE GETTING TSP NODES!"
-	print "LET US SEE IF WE HAVE DUPLICATES"
+	#print "DONE GETTING TSP NODES!"
+	#print "LET US SEE IF WE HAVE DUPLICATES"
 
-	for i in range(0, len(tsp_nodes)-1):
-		for j in range(i+1, len(tsp_nodes)):
-			if tsp_nodes[i] == tsp_nodes[j]:
-				print "we're seeing the same node again!"
-				print tsp_nodes[i], tsp_nodes[j]
+	#for i in range(0, len(tsp_nodes)-1):
+	#	for j in range(i+1, len(tsp_nodes)):
+	#		if tsp_nodes[i] == tsp_nodes[j]:
+	#			print "we're seeing the same node again!"
+	#			print tsp_nodes[i], tsp_nodes[j]
 
 	#Chain the nodes into a series of edges! They're ordered too.
 	tsp_edges = []
@@ -162,13 +165,16 @@ def depth_first_traversal(edges):
 	return tsp_edges
 
 
-def pre_order(root_node, graph):
+def pre_order(graph):
 	
+	# Pick arbitrary node and call it root; it's arbitrary because the graph right now is not directed; there is no true ROOT
+	root_node = graph[graph.keys()[0]][0]
+
 	if VERBOSE:
 		print "Root: ", root_node
 	
 	tsp_nodes = [] # Add nodes to the tsp_nodes list as we visit them in the depth-first traversal
-	tsp_nodes.append(root_node) # Add root node as the first node on the tsp path
+	tsp_nodes.append(root_node) # Add root node as the first node on the tsp path *prefix traversal
 
 	parent_stack = [] # Stack to push on parents as we move down the tree
 
@@ -209,7 +215,10 @@ def pre_order(root_node, graph):
 			parent = sorted_children[0]
 			if VERBOSE:
 				print "New Parent: ", parent
-			tsp_nodes.append(parent) # Add node to the first position of the tsp_nodes list
+			if parent in tsp_nodes:
+				print "Freaking duplicate"
+			else:
+				tsp_nodes.append(parent) # Add node to the first position of the tsp_nodes list
 
 	return tsp_nodes
 
@@ -237,10 +246,6 @@ def remove_crossings(edges):
 		traversal[edges[i][1]] = (edges[i][0], edges[i+1][1])
 
 	traversal[edges[-1][1]] = (edges[-1][0], edges[0][1])
-
-	#print "keys and dictionary"
-	#print "keys: ", traversal.keys()
-	#print traversal
 
 	# Iterate through all pairs of edges, determine if there's a crossing, and we uncross the edges
 	# We do this until there are no more crossings
@@ -282,8 +287,6 @@ def remove_crossings(edges):
 				current_i_node = traversal.keys()[i]
 				current_j_node = traversal.keys()[j]
 
-				#print "Current nodes: ", current_i_node, current_j_node
-
 				edge_i = (current_i_node, traversal[current_i_node][1]) # edge_i = (node at index i, node after i)
 				edge_j = (current_j_node, traversal[current_j_node][1]) # edge_j = (node at index j, node after j)
 
@@ -310,28 +313,18 @@ def remove_crossings(edges):
 						print "Second edge: ", second_edge_node_0, second_edge_node_1
 
 
-					#print "The nodes that are crossing: ", first_edge_node_0, first_edge_node_1, second_edge_node_0, second_edge_node_1
-
 					# In order to determine which of the two points first_edge_node_0 will NOT be connected to,
 					# find the first node that is connected to this node via a path backwards
 					# In order to maintain a constant direction, flip the direction of all edges until we find the first second_edge node
 
-					if first_edge_node_0 not in traversal:
-						print "ISSUES!! Our node not in the dictionary!"
-
-					#node_before = traversal[first_edge_node_0][0] # Get the node before the current node (in the case of i being 0, this would be the last node in the traversal)
 
 					iterator_node = first_edge_node_0
 
-					#print "Iterator node: ", iterator_node
 
 					#Reverse this node
 					node_before = traversal[iterator_node][0]
-					#node_after = traversal[iterator_node][1]
 					node_after = None # The node after is not yet known
 					traversal[iterator_node] = (node_after, node_before) # Now we're pointing in the opposite direction!
-
-					#print "FIRST Rotating Result: ", node_after, node_before
 
 					index = 0
 
@@ -340,14 +333,10 @@ def remove_crossings(edges):
 
 						iterator_node = traversal[iterator_node][1]
 
-						#print "New Iterator: ", iterator_node
-
 						#Reverse this node as well
 						node_before = traversal[iterator_node][0]
 						node_after = traversal[iterator_node][1]
 						traversal[iterator_node] = (node_after, node_before)
-
-						#print "Rotating Result: ", node_after, node_before
 
 						# We've looped back to second_edge_node_0; do _not_ connect to it or we'll have two disjoint graphs
 						if iterator_node == second_edge_node_0:
@@ -357,7 +346,6 @@ def remove_crossings(edges):
 
 						# We've looped back to second_edge_node_1; do _not_connect to it or we'll have two disjoint graphs
 						if iterator_node == second_edge_node_1:
-							#print "We're back at second_edge_node_1"
 
 							# Set correct direction for first_edge_node_0
 							node_before_fe_n0 = second_edge_node_0
@@ -394,21 +382,13 @@ def remove_crossings(edges):
 								done = True;
 								break
 
-						#node_before = traversal[node_before][1] # node_before is already reversed, so go 'forward'
-
-						#old_node_before = traversal[node_before][0]
-						#old_node_after = traversal[node_before][1]
-						#traversal[node_before] = (old_node_after, old_node_before)
-
-						#print node_before
-
 						index += 1
 
-				if done:
-					break
+				#if done:
+				#	break
 
-			if done: 
-				break
+			#if done: 
+			#	break
 
 
 		if num_crossings == 0 or done:
