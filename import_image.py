@@ -15,7 +15,7 @@ import drawing
 import graph
 
 #Syntax:
-#./import_image.py <inputfile> <outputfile>
+#./import_image.py <inputfile> <outputfile> <exponent for contrast adjustments> <lower histogram window> <higher histogram window>
 if(len(sys.argv) != 6):
 	print "ERROR: provide input and output file names"
 	exit()
@@ -57,22 +57,61 @@ for i in range(len(array)):
 		out_array[i][j] =  look_up_table[array[i][j]]
 
 out_img = Image.fromarray(out_array.astype(numpy.uint8))
-out_img.save("temp.jpeg")
+out_img.save("pre_stipple.jpeg")
 
 # Call stipple.py
 
-stipples = stipple.stipple(out_array, 0.08, 0, 9)
-#print stipples[0]
-#print "-----"
+# stipple.stipple(<image array> , <variance>, <min size of minimum array chunk>)
+stipples = stipple.stipple(out_array, 0.1, 0, 64)
+
 print "blocks = ",stipples[1]
 print "recursions = ",stipples[2]
 print "stipple number = ",stipples[3]
+
 out_img = Image.new('L', (len(array[0]), len(array)), "white")
 out_img = drawing.draw_stipples(out_img, stipples[0], 1)
 out_img.save("post_stipple.jpeg")
 print "Finished drawing stipples"
+
 edges = graph.min_span_tree(stipples[0])
-print "Got edges"
+
+#
+#for i in range(0, len(edges)-1):
+#	for j in range(i+1, len(edges)):
+#		if (edges[i][0] == edges[j][0]) and (edges[i][1] == edges[j][1]):
+#			print "we're seeing shit again!"
+#			print edges[i], edges[j]
+#		if (edges[i][0] == edges[j][1]) and (edges[i][1] == edges[j][0]):
+#			print "we're seeing shit again!"
+#			print edges[i], edges[j]
+#
+#print "done"
+#exit()
+
+out_img = Image.new('L', (len(array[0]), len(array)), "white")
 out_img = drawing.draw_edges(out_img, edges)
+out_img.save("post_min_span_tree.jpeg")
+
+tsp_edges = graph.depth_first_traversal(edges)
+
+out_temp_img = Image.new('L', (len(array[0]), len(array)), "white")
+out_temp_img = drawing.draw_edges(out_temp_img, tsp_edges)
+out_temp_img.save("before_uncrossing.jpg")
+
+#tsp_edges = list(set(tsp_edges))
+
+#for i in range(0, len(tsp_edges)-1):
+#	for j in range(i+1, len(tsp_edges)):
+#		if (tsp_edges[i][0] == tsp_edges[j][0]) or (tsp_edges[i][1] == tsp_edges[j][1]):
+#			print "DANGEROUS: DUPLICATE"
+#			print tsp_edges[i]
+#			print tsp_edges[j]
+
+print "Got edges"
+tsp_without_crossings = graph.remove_crossings(tsp_edges)
+
+#print tsp_without_crossings
+print "Done uncrossing!!"
+out_img = drawing.draw_edges(out_img, tsp_without_crossings)
 print "Drew edges"
 out_img.save(out_filename)
