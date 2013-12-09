@@ -73,3 +73,4 @@ def calc_vectors(image, density):
 
 def flip(p):
 	return 1 if np.random.random() < p else 0
+
